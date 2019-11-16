@@ -1,0 +1,5 @@
+Ctrl + mousemove: Display cursor coordinates
+Ctrl + Alt + space: Pauses/Play tics
+
+System.logKeys(); // Shows every key that the user is pressing
+System.key(keyname); // Returns if the user is pressing this key
