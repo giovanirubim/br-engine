@@ -46,3 +46,5 @@ System.ready(() => {
 	// Before the tics and renders start
 
 });
+
+// Test
