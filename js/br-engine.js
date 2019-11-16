@@ -1,3 +1,48 @@
+// - Resource Control --------------------------------------------------------------------------- //
+
+class ResourceControl {
+	constructor(action) {
+		this.map = {};
+		this.total = 0;
+		this.stacked = false;
+		this.action = action;
+	}
+	needs(resource) {
+		const {map} = this;
+		map[resource] = (map[resource] || 0) + 1;
+		++ this.total;
+		return this;
+	}
+	got(resource) {
+		const {map, stacked, action} = this;
+		const n = map[resource] = (map[resource] || 0) - 1;
+		if (n < 0) {
+			throw 'Resource ' + resource + ' is negative';
+		}
+		if (--this.total === 0 && stacked) {
+			action();
+		}
+		return this;
+	}
+	clear() {
+		this.stacked = false;
+		return this;
+	}
+	call() {
+		const {total, action} = this;
+		if (total === 0) {
+			action();
+			this.stacked = false;
+			return this;
+		}
+		this.stacked = true;
+		return this;
+	}
+}
+
+const SPRITES_READY = 1;
+const SPRITE_FILES_LOADED = 2;
+
 // - Screen ------------------------------------------------------------------------------------- //
 
 let wrapCanvas;
@@ -19,10 +64,8 @@ const handleResize = () => {
 		pixelSize = pixel;
 		canvas.width = canvasWidth = pixelSize*screenWidth;
 		canvas.height = canvasHeight = pixelSize*screenHeight;
-		scaleSprites();
-		if (render_ready) {
-			render();
-		}
+		spritesUpdate.call();
+		callRender();
 	}
 	wrapCanvas.style.top = Math.floor((height - canvasHeight)/2) + 'px';
 	wrapCanvas.style.left = Math.floor((width - canvasWidth)/2) + 'px';
@@ -45,13 +88,12 @@ export const ready = method => {
 
 // - Render ------------------------------------------------------------------------------------- //
 
-let render_ready = false;
-let render;
+let render = new ResourceControl(() => console.log('Render undefined'));
 const callRender = () => {
-	render();
+	render.call();
 };
 export const setRender = method => {
-	render = method;
+	render.action = method;
 };
 export { callRender as render };
 
@@ -87,91 +129,100 @@ const stop = () => {
 // - Sprites ------------------------------------------------------------------------------------ //
 
 let wrapSprites;
+const spriteSrcMap = {};
 const spriteMap = {};
-const scaledSpriteMap = {};
 const spriteBuffer = [];
+const innerCanvas = document.createElement('canvas');
+const innerCtx = innerCanvas.getContext('2d');
 
-const scaleSprite = spriteId => {
-
-	let img = spriteMap[spriteId];
-	let canvasWidth = img.width;
-	let canvasHeight = img.height;
-
-	let canvas = document.createElement('canvas');
-	canvas.width = canvasWidth;
-	canvas.height = canvasWidth;
+const initSprite = sprite => {
 	
-	let ctx = canvas.getContext('2d');
+	const {fileName, mirrored, rotated, img} = sprite;
+	const srcImg = spriteSrcMap[fileName];
+	const {width, height} = srcImg;
 	
-	ctx.drawImage(img, 0, 0);
-	let {data} = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+	innerCanvas.width = width;
+	innerCanvas.height = height;
+	
+	innerCtx.drawImage(srcImg, 0, 0);
+	const {data} = innerCtx.getImageData(0, 0, width, height);
 
-	canvas.width = canvasWidth*pixelSize;
-	canvas.height = canvasWidth*pixelSize;
-
-	let x = 0, y = 0;
-	for (let i=0; i<data.length; i+=4) {
-		let r = data[i];
-		let g = data[i + 1];
-		let b = data[i + 2];
-		let a = data[i + 3]/255;
-		let color = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+	innerCanvas.width = width*pixelSize;
+	innerCanvas.height = height*pixelSize;
+	
+	const getColor = (x, y) => {
+		let c = (y*width + x)*4;
+		let r = data[c];
+		let g = data[c + 1];
+		let b = data[c + 2];
+		let a = data[c + 3]/255;
 		if (r === 255 && g === 0 && b === 255 && a === 1) {
-			color = 'rgba(0, 0, 0, 0)';
+			return `rgba(0, 0, 0, 0)`;
 		}
-		ctx.fillStyle = color;
-		ctx.fillRect(x*pixelSize, y*pixelSize, pixelSize, pixelSize);
-		if (++x === canvasWidth) {
-			x = 0;
-			++ y;
+		return `rgba(${r}, ${g}, ${b}, ${a})`;
+	};
+	for (let y=0; y<height; ++y) {
+		for (let x=0; x<width; ++x) {
+			const color = getColor(x, y);
+			innerCtx.fillStyle = color;
+			innerCtx.fillRect(x*pixelSize, y*pixelSize, pixelSize, pixelSize);
 		}
 	}
-
-	let scaled = scaledSpriteMap[spriteId];
-	if (!scaled) {
-		scaled = document.createElement('img');
-		scaledSpriteMap[spriteId] = scaled;
-	}
-	scaled.src = canvas.toDataURL();
-
+	img.src = innerCanvas.toDataURL();
 };
 
-const scaleSprites = () => {
+const initSprites = () => {
+	for (let id in spriteMap) {
+		initSprite(spriteMap[id]);
+	}
+};
+
+const spritesUpdate = new ResourceControl(initSprites);
+
+const loadSpriteFiles = callback => {
+	console.log('Loading sprite files...');
+
+	const srcBuffer = [];
 	for (let spriteId in spriteMap) {
-		scaleSprite(spriteId);
-	}
-};
 
-const loadSprites = callback => {
-	
-	console.log('Loading sprites');
-	let counter = spriteBuffer.length;
-	
-	spriteBuffer.forEach(({spriteId, fileName}) => {
-	
-		const img = document.createElement('img');
+		const {fileName, img} = spriteMap[spriteId];
+
+		if (!spriteSrcMap[fileName]) {
+			spriteSrcMap[fileName] = img;
+			srcBuffer.push(fileName);
+		}
+	}
+
+	let counter = srcBuffer.length;
+	const handleLoaded = fileName => {
+		console.log(fileName + ' loaded');
+		if (--counter === 0) {
+			if (callback) callback();
+		}
+	};
+
+	srcBuffer.forEach(fileName => {
+		const img = spriteSrcMap[fileName];
+		img.onload = () => {
+			img.onload = null;
+			handleLoaded(fileName);
+		};
 		img.src = 'sprites/' + fileName;
 		wrapSprites.appendChild(img);
-	
-		img.onload = () => {
-			if (!spriteMap[spriteId]) {
-				spriteMap[spriteId] = img;
-				console.log('Sprite ' + spriteId + ' loaded');
-				if (--counter === 0 && callback) callback();
-			}
-		};
-
 	});
 };
 
-export const loadSprite = (spriteId, fileName) => {
-	spriteBuffer.push({spriteId, fileName});
+export const loadSprite = (spriteId, fileName, mirrored, rotated) => {
+	mirrored = mirrored || false;
+	rotated = rotated || 0;
+	const img = document.createElement('img');
+	spriteMap[spriteId] = {fileName, mirrored, rotated, img};
 };
 
 export const drawSprite = (spriteId, x, y) => {
 	x = Math.floor(x);
 	y = Math.floor(y);
-	const img = scaledSpriteMap[spriteId];
+	const {img} = spriteMap[spriteId];
 	x *= pixelSize;
 	y = (screenHeight - y)*pixelSize - img.height;
 	ctx.drawImage(img, x, y);
@@ -227,6 +278,9 @@ export const key = name => {
 
 // - Main --------------------------------------------------------------------------------------- //
 
+render.needs(SPRITES_READY);
+spritesUpdate.needs(SPRITE_FILES_LOADED);
+
 window.addEventListener('load', () => {
 	
 	canvas = document.querySelector('#gamescreen');
@@ -245,16 +299,18 @@ window.addEventListener('load', () => {
 		ctx.font = '16px monospace';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
-		render();
+		callRender();
 		ctx.fillText(`${x}, ${screenHeight - y - 1}`, canvasWidth/2, canvasHeight/2);
 	});
 
 	bindKeys();
 
-	loadSprites(() => {
+	loadSpriteFiles(() => {
 		console.log('All sprites loaded');
-		scaleSprites();
-		render_ready = true;
+		spritesUpdate.clear();
+		spritesUpdate.got(SPRITE_FILES_LOADED);
+		spritesUpdate.call();
+		render.got(SPRITES_READY);
 		init();
 		start();
 	});
