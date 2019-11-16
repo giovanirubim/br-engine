@@ -139,8 +139,8 @@ const initSprite = sprite => {
 	
 	const {fileName, mirrored, rotated, img} = sprite;
 	const srcImg = spriteSrcMap[fileName];
-	const {width, height} = srcImg;
-	
+	let {width, height} = srcImg;
+
 	innerCanvas.width = width;
 	innerCanvas.height = height;
 	
@@ -149,9 +149,41 @@ const initSprite = sprite => {
 
 	innerCanvas.width = width*pixelSize;
 	innerCanvas.height = height*pixelSize;
-	
-	const getColor = (x, y) => {
-		let c = (y*width + x)*4;
+
+	let h_axis = 'x';
+	let v_axis = 'y';
+	let max = {x: width, y: height};
+	let neg = {x: false, y: false};
+
+	const flipAxis = () => {
+		let aux = v_axis;
+		v_axis = h_axis;
+		h_axis = aux;
+	};
+
+	if (mirrored) {
+		neg[h_axis] = !neg[h_axis];
+	}
+
+	if (rotated === 1) {
+		flipAxis();
+		neg.y = !neg.y;
+	} else if (rotated === 2) {
+		neg.y = !neg.y;
+		neg.x = !neg.x;
+	} else if (rotated === 3) {
+		flipAxis();
+		neg.x = !neg.x;
+	}
+
+	const getColor = (h, v) => {
+		if (neg[h_axis]) {
+			h = max[h_axis] - h - 1;
+		}
+		if (neg[v_axis]) {
+			v = max[v_axis] - v - 1;
+		}
+		let c = h_axis === 'x'? (v*max.x + h)*4: (h*max.x + v)*4;
 		let r = data[c];
 		let g = data[c + 1];
 		let b = data[c + 2];
@@ -161,13 +193,19 @@ const initSprite = sprite => {
 		}
 		return `rgba(${r}, ${g}, ${b}, ${a})`;
 	};
-	for (let y=0; y<height; ++y) {
-		for (let x=0; x<width; ++x) {
-			const color = getColor(x, y);
+
+	innerCanvas.width = max[h_axis]*pixelSize;
+	innerCanvas.height = max[v_axis]*pixelSize;
+	for (let v=0; v<max[v_axis]; ++v) {
+		for (let h=0; h<max[h_axis]; ++h) {
+			const color = getColor(h, v);
 			innerCtx.fillStyle = color;
-			innerCtx.fillRect(x*pixelSize, y*pixelSize, pixelSize, pixelSize);
+			innerCtx.fillRect(h*pixelSize, v*pixelSize, pixelSize, pixelSize);
 		}
 	}
+
+	img.width = max[h_axis]*pixelSize;
+	img.height = max[v_axis]*pixelSize;
 	img.src = innerCanvas.toDataURL();
 };
 
@@ -185,10 +223,10 @@ const loadSpriteFiles = callback => {
 	const srcBuffer = [];
 	for (let spriteId in spriteMap) {
 
-		const {fileName, img} = spriteMap[spriteId];
+		const {fileName} = spriteMap[spriteId];
 
 		if (!spriteSrcMap[fileName]) {
-			spriteSrcMap[fileName] = img;
+			spriteSrcMap[fileName] = document.createElement('img');
 			srcBuffer.push(fileName);
 		}
 	}
@@ -222,7 +260,11 @@ export const loadSprite = (spriteId, fileName, mirrored, rotated) => {
 export const drawSprite = (spriteId, x, y) => {
 	x = Math.floor(x);
 	y = Math.floor(y);
-	const {img} = spriteMap[spriteId];
+	const sprite = spriteMap[spriteId];
+	if (!sprite) {
+		throw 'No sprite called ' + spriteId;
+	}
+	const {img} = sprite;
 	x *= pixelSize;
 	y = (screenHeight - y)*pixelSize - img.height;
 	ctx.drawImage(img, x, y);
