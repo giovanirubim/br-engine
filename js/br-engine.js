@@ -62,6 +62,7 @@ const start = () => {
 	if (ticInterval !== null) {
 		return;
 	}
+	console.log('Tics are running');
 	let delay = Math.floor(1000/ticsPerSec);
 	ticInterval = setInterval(tic, delay);
 };
@@ -69,6 +70,7 @@ const stop = () => {
 	if (ticInterval === null) {
 		return;
 	}
+	console.log('Tics were stopped');
 	clearInterval(ticInterval);
 	ticInterval = null;
 };
