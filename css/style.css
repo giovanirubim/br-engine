@@ -12,3 +12,6 @@ canvas{
 	display: inline-block;
 	overflow: hidden;
 }
+#wrapcanvas {
+	position: fixed;
+}

@@ -1,23 +1,31 @@
 // - Screen ------------------------------------------------------------------------------------- //
 
+let wrapCanvas;
 let canvas;
 let canvasWidth;
 let canvasHeight;
 let ctx;
 
-let pixelSize;
+let pixelSize = null;
 let screenWidth = 80;
 let screenHeight = 60;
 
-const calcPixelSize = () => {
+const handleResize = () => {
 	let width = window.innerWidth;
 	let height = window.innerHeight;
-	pixelSize = Math.min((width - 20)/screenWidth, (height - 20)/screenHeight);
-	pixelSize = Math.max(Math.floor(pixelSize), 1);
-	canvas.width = canvasWidth = pixelSize*screenWidth;
-	canvas.height = canvasHeight = pixelSize*screenHeight;
-	canvas.style.marginTop = Math.floor((height - canvasHeight)/2) + 'px';
-	canvas.style.marginLeft = Math.floor((width - canvasWidth)/2) + 'px';
+	let pixel = Math.min((width - 20)/screenWidth, (height - 20)/screenHeight);
+	pixel = Math.max(Math.floor(pixel), 1);
+	if (pixel !== pixelSize) {
+		pixelSize = pixel;
+		canvas.width = canvasWidth = pixelSize*screenWidth;
+		canvas.height = canvasHeight = pixelSize*screenHeight;
+		scaleSprites();
+		if (render_ready) {
+			render();
+		}
+	}
+	wrapCanvas.style.top = Math.floor((height - canvasHeight)/2) + 'px';
+	wrapCanvas.style.left = Math.floor((width - canvasWidth)/2) + 'px';
 };
 
 // - Screen ------------------------------------------------------------------------------------- //
@@ -37,6 +45,7 @@ export const ready = method => {
 
 // - Render ------------------------------------------------------------------------------------- //
 
+let render_ready = false;
 let render;
 const callRender = () => {
 	render();
@@ -77,12 +86,14 @@ const stop = () => {
 
 // - Sprites ------------------------------------------------------------------------------------ //
 
-let spriteWrapper;
+let wrapSprites;
 const spriteMap = {};
+const scaledSpriteMap = {};
 const spriteBuffer = [];
 
-const scaleSprite = img => {
+const scaleSprite = spriteId => {
 
+	let img = spriteMap[spriteId];
 	let canvasWidth = img.width;
 	let canvasHeight = img.height;
 
@@ -115,8 +126,20 @@ const scaleSprite = img => {
 			++ y;
 		}
 	}
-	img.src = canvas.toDataURL();
 
+	let scaled = scaledSpriteMap[spriteId];
+	if (!scaled) {
+		scaled = document.createElement('img');
+		scaledSpriteMap[spriteId] = scaled;
+	}
+	scaled.src = canvas.toDataURL();
+
+};
+
+const scaleSprites = () => {
+	for (let spriteId in spriteMap) {
+		scaleSprite(spriteId);
+	}
 };
 
 const loadSprites = callback => {
@@ -128,13 +151,11 @@ const loadSprites = callback => {
 	
 		const img = document.createElement('img');
 		img.src = 'sprites/' + fileName;
-		spriteWrapper.appendChild(img);
+		wrapSprites.appendChild(img);
 	
 		img.onload = () => {
 			if (!spriteMap[spriteId]) {
 				spriteMap[spriteId] = img;
-				scaleSprite(img);
-			} else {
 				console.log('Sprite ' + spriteId + ' loaded');
 				if (--counter === 0 && callback) callback();
 			}
@@ -148,7 +169,9 @@ export const loadSprite = (spriteId, fileName) => {
 };
 
 export const drawSprite = (spriteId, x, y) => {
-	const img = spriteMap[spriteId];
+	x = Math.floor(x);
+	y = Math.floor(y);
+	const img = scaledSpriteMap[spriteId];
 	x *= pixelSize;
 	y = (screenHeight - y)*pixelSize - img.height;
 	ctx.drawImage(img, x, y);
@@ -179,8 +202,11 @@ const bindKeys = () => {
 		keyIsDown[keyLoc] = true;
 		keyMap[key] = (keyMap[key] || 0) + 1;
 		if (e.ctrlKey && e.altKey && key === ' ') {
-			if (ticInterval) stop();
-			else start();
+			if (ticInterval) {
+				stop();
+			} else {
+				start();
+			}
 		}
 	});
 	window.addEventListener('keyup', e => {
@@ -206,10 +232,9 @@ window.addEventListener('load', () => {
 	canvas = document.querySelector('#gamescreen');
 	ctx = canvas.getContext('2d');
 
-	spriteWrapper = document.querySelector('#sprites');
+	wrapSprites = document.querySelector('#sprites');
+	wrapCanvas = document.querySelector('#wrapcanvas');
 
-	calcPixelSize();
-	
 	canvas.addEventListener('mousemove', e => {
 		if (!e.ctrlKey) {
 			return;
@@ -228,8 +253,13 @@ window.addEventListener('load', () => {
 
 	loadSprites(() => {
 		console.log('All sprites loaded');
+		scaleSprites();
+		render_ready = true;
 		init();
 		start();
 	});
+
+	handleResize();
+	window.addEventListener('resize', handleResize);
 
 });
