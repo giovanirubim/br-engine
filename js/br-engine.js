@@ -1,5 +1,76 @@
 // - Resource Control --------------------------------------------------------------------------- //
 
+class Vector2 {
+	constructor() {
+		const argc = arguments.length;
+		this.x = 0;
+		this.y = 0;
+		if (argc === 1) {
+			const arg = arguments[0];
+			if (arg instanceof Vector2) {
+				this.x = arg.x;
+				this.y = arg.y;
+			} else if (typeof arg === 'number') {
+				this.x = arg;
+				this.y = arg;
+			}
+		} else if (argc === 2) {
+			const [a, b] = arguments;
+			this.x = a;
+			this.y = b;
+		}
+	}
+	add() {
+		const argc = arguments.length;
+		if (argc === 1) {
+			const arg = arguments[0];
+			if (arg instanceof Vector2) {
+				this.x += arg.x;
+				this.y += arg.y;
+			} else if (typeof arg === 'number') {
+				this.x += arg;
+				this.y += arg;
+			}
+		} else if (argc === 2) {
+			const [a, b] = arguments;
+			this.x += a;
+			this.y += b;
+		}
+		return this;
+	}
+	sub() {
+		const argc = arguments.length;
+		if (argc === 1) {
+			const arg = arguments[0];
+			if (arg instanceof Vector2) {
+				this.x -= arg.x;
+				this.y -= arg.y;
+			} else if (typeof arg === 'number') {
+				this.x -= arg;
+				this.y -= arg;
+			}
+		} else if (argc === 2) {
+			const [a, b] = arguments;
+			this.x -= a;
+			this.y -= b;
+		}
+		return this;
+	}
+	length() {
+		const {x, y} = this;
+		return Math.sqrt(x*x + y*y);
+	}
+	clone() {
+		return new Vector2(this);
+	}
+}
+
+export const vec2 = function() {
+	return new Vector2(...arguments);
+};
+
+// - Resource Control --------------------------------------------------------------------------- //
+
 class ResourceControl {
 	constructor(action) {
 		this.map = {};
@@ -277,12 +348,12 @@ export const drawSprite = (spriteId, x, y) => {
 
 // - Hand drawings ------------------------------------------------------------------------------ //
 
-export const drawRect = (ax, ay, bx, by) => {
+export const drawRect = (ax, ay, bx, by, color) => {
 	ax = (Math.floor(ax) + 0.5)*pixelSize;
 	ay = (Math.floor(ay) + 0.5)*pixelSize;
 	bx = (Math.floor(bx) + 0.5)*pixelSize;
 	by = (Math.floor(by) + 0.5)*pixelSize;
-	ctx.strokeStyle = '#0bf';
+	ctx.strokeStyle = color || '#0bf';
 	ctx.lineWidth = pixelSize;
 	ctx.beginPath();
 	ctx.rect(ax, screenHeight*pixelSize - by, bx - ax, by - ay);
