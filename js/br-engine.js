@@ -275,6 +275,20 @@ export const drawSprite = (spriteId, x, y) => {
 	ctx.drawImage(img, x, y);
 };
 
+// - Hand drawings ------------------------------------------------------------------------------ //
+
+export const drawRect = (ax, ay, bx, by) => {
+	ax = (Math.floor(ax) + 0.5)*pixelSize;
+	ay = (Math.floor(ay) + 0.5)*pixelSize;
+	bx = (Math.floor(bx) + 0.5)*pixelSize;
+	by = (Math.floor(by) + 0.5)*pixelSize;
+	ctx.strokeStyle = '#0bf';
+	ctx.lineWidth = pixelSize;
+	ctx.beginPath();
+	ctx.rect(ax, screenHeight*pixelSize - by, bx - ax, by - ay);
+	ctx.stroke();
+};
+
 // - Key events --------------------------------------------------------------------------------- //
 
 const keyMap = {};
