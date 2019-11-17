@@ -348,15 +348,16 @@ export const drawSprite = (spriteId, x, y) => {
 
 // - Hand drawings ------------------------------------------------------------------------------ //
 
-export const drawRect = (ax, ay, bx, by, color) => {
+export const drawRect = (ax, ay, sx, sy, color) => {
 	ax = (Math.floor(ax) + 0.5)*pixelSize;
 	ay = (Math.floor(ay) + 0.5)*pixelSize;
-	bx = (Math.floor(bx) + 0.5)*pixelSize;
-	by = (Math.floor(by) + 0.5)*pixelSize;
-	ctx.strokeStyle = color || '#0bf';
+	sx = (Math.floor(sx) - 1)*pixelSize;
+	sy = (Math.floor(sy) - 1)*pixelSize;
+	if (sx < 0 || sy < 0) return;
+	ctx.strokeStyle = color || '#07f';
 	ctx.lineWidth = pixelSize;
 	ctx.beginPath();
-	ctx.rect(ax, screenHeight*pixelSize - by, bx - ax, by - ay);
+	ctx.rect(ax, canvasHeight - ay - sy, sx, sy);
 	ctx.stroke();
 };
 
