@@ -46,14 +46,22 @@ const SPRITE_FILES_LOADED = 2;
 // - Screen ------------------------------------------------------------------------------------- //
 
 let wrapCanvas;
-let canvas;
 let canvasWidth;
 let canvasHeight;
+let canvas;
 let ctx;
+let bgCanvas;
+let bgCtx;
 
 let pixelSize = null;
 let screenWidth = 80;
 let screenHeight = 60;
+
+export const set = config => {
+	screenWidth = config.screenWidth || screenWidth;
+	screenHeight = config.screenHeight || screenHeight;
+	ticsPerSec = config.ticsPerSec || ticsPerSec;
+};
 
 const handleResize = () => {
 	let width = window.innerWidth;
@@ -62,21 +70,18 @@ const handleResize = () => {
 	pixel = Math.max(Math.floor(pixel), 1);
 	if (pixel !== pixelSize) {
 		pixelSize = pixel;
-		canvas.width = canvasWidth = pixelSize*screenWidth;
-		canvas.height = canvasHeight = pixelSize*screenHeight;
+		canvasWidth = pixelSize*screenWidth;
+		canvasHeight = pixelSize*screenHeight;
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+		bgCanvas.width = canvasWidth;
+		bgCanvas.height = canvasHeight;
+		bgCanvas.style.marginBottom = '-' + canvasHeight + 'px';
 		spritesUpdate.call();
 		callRender();
 	}
 	wrapCanvas.style.top = Math.floor((height - canvasHeight)/2) + 'px';
 	wrapCanvas.style.left = Math.floor((width - canvasWidth)/2) + 'px';
-};
-
-// - Screen ------------------------------------------------------------------------------------- //
-
-export const set = config => {
-	screenWidth = config.screenWidth || screenWidth;
-	screenHeight = config.screenHeight || screenHeight;
-	ticsPerSec = config.ticsPerSec || ticsPerSec;
 };
 
 // - Init --------------------------------------------------------------------------------------- //
@@ -327,6 +332,9 @@ window.addEventListener('load', () => {
 	
 	canvas = document.querySelector('#gamescreen');
 	ctx = canvas.getContext('2d');
+
+	bgCanvas = document.querySelector('#background');
+	bgCtx = canvas.getContext('2d');
 
 	wrapSprites = document.querySelector('#sprites');
 	wrapCanvas = document.querySelector('#wrapcanvas');

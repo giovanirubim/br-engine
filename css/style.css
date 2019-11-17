@@ -2,8 +2,10 @@ body {
 	background-color: #22201e;
 	margin: 0px;
 }
-canvas{
-	background-color: #444;
+#background {
+	float: left;
+}
+#gamescreen {
 	box-shadow: -5px 5px 15px #111;
 }
 #sprites {
