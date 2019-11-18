@@ -69,6 +69,15 @@ export const vec2 = function() {
 	return new Vector2(...arguments);
 };
 
+// - Hitbox colision ---------------------------------------------------------------------------- //
+
+export const colisionDistRight = (pos_1, hitbox_1, pos_2, hitbox_2) => {
+	if (pos_1.y >= pos_2.y + hitbox_2.y) return Infinity;
+	if (pos_2.y >= pos_1.y + hitbox_1.y) return Infinity;
+	if (pos_1.x >= pos_2.x + hitbox_2.x) return Infinity;
+	return pos_2.x - pos_1.x;
+};
+
 // - Resource Control --------------------------------------------------------------------------- //
 
 class ResourceControl {
