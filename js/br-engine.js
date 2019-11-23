@@ -1,4 +1,4 @@
-// - Resource Control --------------------------------------------------------------------------- //
+// - vec2 --------------------------------------------------------------------------------------- //
 
 class Vector2 {
 	constructor() {
@@ -56,6 +56,12 @@ class Vector2 {
 		}
 		return this;
 	}
+	swap() {
+		const {x, y} = this;
+		this.x = y;
+		this.y = x;
+		return this;
+	}
 	length() {
 		const {x, y} = this;
 		return Math.sqrt(x*x + y*y);
@@ -74,8 +80,35 @@ export const vec2 = function() {
 export const colisionDistRight = (pos_1, hitbox_1, pos_2, hitbox_2) => {
 	if (pos_1.y >= pos_2.y + hitbox_2.y) return Infinity;
 	if (pos_2.y >= pos_1.y + hitbox_1.y) return Infinity;
+	const front = pos_1.x + hitbox_1.x;
+	const center = pos_2.x + hitbox_2.x/2;
+	if (front > center) return Infinity;
+	return pos_2.x - front;
+};
+
+export const colisionDistLeft = (pos_1, hitbox_1, pos_2, hitbox_2) => {
+	if (pos_1.y >= pos_2.y + hitbox_2.y) return Infinity;
+	if (pos_2.y >= pos_1.y + hitbox_1.y) return Infinity;
+	const center = pos_2.x + hitbox_2.x/2;
+	if (pos_1.x < center) return Infinity;
+	return pos_1.x - (pos_2.x + hitbox_2.x);
+};
+
+export const colisionDistUp = (pos_1, hitbox_1, pos_2, hitbox_2) => {
 	if (pos_1.x >= pos_2.x + hitbox_2.x) return Infinity;
-	return pos_2.x - pos_1.x;
+	if (pos_2.x >= pos_1.x + hitbox_1.x) return Infinity;
+	const front = pos_1.y + hitbox_1.y;
+	const center = pos_2.y + hitbox_2.y/2;
+	if (front > center) return Infinity;
+	return pos_2.y - front;
+};
+
+export const colisionDistDown = (pos_1, hitbox_1, pos_2, hitbox_2) => {
+	if (pos_1.x >= pos_2.x + hitbox_2.x) return Infinity;
+	if (pos_2.x >= pos_1.x + hitbox_1.x) return Infinity;
+	const center = pos_2.y + hitbox_2.y/2;
+	if (pos_1.y < center) return Infinity;
+	return pos_1.y - (pos_2.y + hitbox_2.y);
 };
 
 // - Resource Control --------------------------------------------------------------------------- //
@@ -388,6 +421,10 @@ const bindKeys = () => {
 	const filterKey = key => key.toLowerCase().replace('arrow', '');
 	window.addEventListener('keydown', e => {
 		const key = filterKey(e.key);
+		if (!ticInterval && key === 'enter' || key === '\n') {
+			tic();
+			render.call();
+		}
 		const keyLoc = key + (e.location || e.keyLocation);
 		if (keyIsDown[keyLoc]) {
 			return;
