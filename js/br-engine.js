@@ -376,8 +376,8 @@ export const loadSprite = (spriteId, fileName, mirrored, rotated) => {
 };
 
 export const drawSprite = (spriteId, x, y) => {
-	x = Math.floor(x);
-	y = Math.floor(y);
+	x = Math.floor(Math.round(x*1e6)/1e6);
+	y = Math.floor(Math.round(y*1e6)/1e6);
 	const sprite = spriteMap[spriteId];
 	if (!sprite) {
 		throw 'No sprite called ' + spriteId;
