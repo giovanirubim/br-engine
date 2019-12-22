@@ -169,6 +169,7 @@ let bgCtx;
 let pixelSize = null;
 let screenWidth = 80;
 let screenHeight = 60;
+let fontSize = null;
 
 export const set = config => {
 	screenWidth = config.screenWidth || screenWidth;
@@ -183,6 +184,7 @@ const handleResize = () => {
 	pixel = Math.max(Math.floor(pixel), 1);
 	if (pixel !== pixelSize) {
 		pixelSize = pixel;
+		fontSize = pixelSize*8;
 		canvasWidth = pixelSize*screenWidth;
 		canvasHeight = pixelSize*screenHeight;
 		canvas.width = canvasWidth;
@@ -478,7 +480,7 @@ window.addEventListener('load', () => {
 		let x = Math.floor(e.offsetX/pixelSize);
 		let y = Math.floor(e.offsetY/pixelSize);
 		ctx.fillStyle = '#fff';
-		ctx.font = '16px monospace';
+		ctx.font = fontSize + 'px monospace';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
 		callRender();
