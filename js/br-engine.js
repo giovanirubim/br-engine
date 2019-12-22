@@ -228,8 +228,8 @@ let ticCounter = 0;
 let ticsPerSec = 20;
 let ticInterval = null;
 const callTic = () => {
-	++ ticCounter;
 	tic();
+	++ ticCounter;
 };
 export const setTic = method => {
 	tic = method;
