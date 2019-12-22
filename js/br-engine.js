@@ -406,7 +406,7 @@ export const drawRect = (ax, ay, sx, sy, color) => {
 };
 
 export const write = (text, x, y, color) => {
-	ctx.fillStyle = '#fff';
+	ctx.fillStyle = color || '#fff';
 	ctx.font = fontSize + 'px monospace';
 	ctx.textAlign = 'left';
 	ctx.textBaseline = 'bottom';
