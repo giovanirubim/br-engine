@@ -224,10 +224,18 @@ export const clear = () => {
 // - Tic ---------------------------------------------------------------------------------------- //
 
 let tic;
+let ticCounter = 0;
 let ticsPerSec = 20;
 let ticInterval = null;
+const callTic = () => {
+	++ ticCounter;
+	tic();
+};
 export const setTic = method => {
 	tic = method;
+};
+export const countTics = () => {
+	return ticCounter;
 };
 const start = () => {
 	if (ticInterval !== null) {
@@ -235,7 +243,7 @@ const start = () => {
 	}
 	console.log('Tics are running');
 	let delay = Math.floor(1000/ticsPerSec);
-	ticInterval = setInterval(tic, delay);
+	ticInterval = setInterval(callTic, delay);
 };
 const stop = () => {
 	if (ticInterval === null) {
@@ -437,7 +445,7 @@ const bindKeys = () => {
 	window.addEventListener('keydown', e => {
 		const key = filterKey(e.key);
 		if (!ticInterval && key === 'enter' || key === '\n') {
-			tic();
+			callTic();
 			render.call();
 		}
 		const keyLoc = key + (e.location || e.keyLocation);
