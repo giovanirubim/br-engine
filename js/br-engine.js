@@ -56,6 +56,17 @@ class Vector2 {
 		}
 		return this;
 	}
+	set() {
+		const argc = arguments.length;
+		if (argc === 1) {
+			this.x = this.y = arguments[0];
+		} else if (argc === 2) {
+			const [x, y] = arguments;
+			this.x = x;
+			this.y = y;
+		}
+		return this;
+	}
 	swap() {
 		const {x, y} = this;
 		this.x = y;
