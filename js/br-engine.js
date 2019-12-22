@@ -390,6 +390,11 @@ export const drawSprite = (spriteId, x, y) => {
 	ctx.drawImage(img, x, y);
 };
 
+// - Math help ---------------------------------------------------------------------------------- //
+
+export const mod = (x, y) => (x % y + y) % y;
+export const div = (x, y) => Math.round((x - (x % y))/y);
+
 // - Hand drawings ------------------------------------------------------------------------------ //
 
 export const drawRect = (ax, ay, sx, sy, color) => {
