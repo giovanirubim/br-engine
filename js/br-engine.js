@@ -405,6 +405,14 @@ export const drawRect = (ax, ay, sx, sy, color) => {
 	ctx.stroke();
 };
 
+export const write = (text, x, y, color) => {
+	ctx.fillStyle = '#fff';
+	ctx.font = fontSize + 'px monospace';
+	ctx.textAlign = 'left';
+	ctx.textBaseline = 'bottom';
+	ctx.fillText(text, x*pixelSize, (screenHeight - y)*pixelSize);
+};
+
 // - Key events --------------------------------------------------------------------------------- //
 
 const keyMap = {};
