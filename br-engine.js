@@ -371,6 +371,10 @@ const loadSpriteFiles = callback => {
 	}
 
 	let counter = srcBuffer.length;
+	if (counter === 0) {
+		callback && callback();
+	}
+
 	const handleLoaded = fileName => {
 		console.log(fileName + ' loaded');
 		if (--counter === 0) {
@@ -387,6 +391,7 @@ const loadSpriteFiles = callback => {
 		img.src = 'sprites/' + fileName;
 		wrapSprites.appendChild(img);
 	});
+
 };
 
 export const loadSprite = (spriteId, fileName, mirrored, rotated) => {
@@ -495,15 +500,26 @@ render.needs(SPRITES_READY);
 spritesUpdate.needs(SPRITE_FILES_LOADED);
 
 window.addEventListener('load', () => {
-	
-	canvas = document.querySelector('#gamescreen');
+
+	const create = (tag, id) => {
+		const res = document.createElement(tag);
+		res.setAttribute('id', id);
+		return res;
+	};
+
+	wrapCanvas = create('div', 'wrapcanvas');
+	wrapSprites = create('div', 'sprites');
+	canvas = create('canvas', 'gamescreen');
+	bgCanvas = create('canvas', 'background');
+	wrapCanvas.appendChild(canvas);
+	wrapCanvas.appendChild(bgCanvas);
+
+	document.body.appendChild(wrapCanvas);
+	document.body.appendChild(wrapSprites);
+
 	ctx = canvas.getContext('2d');
 
-	bgCanvas = document.querySelector('#background');
 	bgCtx = canvas.getContext('2d');
-
-	wrapSprites = document.querySelector('#sprites');
-	wrapCanvas = document.querySelector('#wrapcanvas');
 
 	canvas.addEventListener('mousemove', e => {
 		if (!e.ctrlKey) {
