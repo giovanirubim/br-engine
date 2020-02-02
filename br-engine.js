@@ -542,8 +542,8 @@ window.addEventListener('load', () => {
 		spritesUpdate.clear();
 		spritesUpdate.got(SPRITE_FILES_LOADED);
 		spritesUpdate.call();
-		render.got(SPRITES_READY);
 		init();
+		render.got(SPRITES_READY);
 		start();
 	});
 
