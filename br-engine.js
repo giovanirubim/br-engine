@@ -477,6 +477,9 @@ const bindKeys = () => {
 				start();
 			}
 		}
+		if (key === 'right' && !ticInterval) {
+			callTic();
+		}
 	});
 	window.addEventListener('keyup', e => {
 		const key = filterKey(e.key);
