@@ -459,6 +459,10 @@ export const logKeys = () => {
 const bindKeys = () => {
 	const filterKey = key => key.toLowerCase().replace('arrow', '');
 	window.addEventListener('keydown', e => {
+		if (key === 'right' && !ticInterval && e.altKey) {
+			callTic();
+			return;
+		}
 		const key = filterKey(e.key);
 		if (!ticInterval && key === 'enter' || key === '\n') {
 			callTic();
@@ -476,9 +480,6 @@ const bindKeys = () => {
 			} else {
 				start();
 			}
-		}
-		if (key === 'right' && !ticInterval) {
-			callTic();
 		}
 	});
 	window.addEventListener('keyup', e => {
