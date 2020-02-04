@@ -459,11 +459,11 @@ export const logKeys = () => {
 const bindKeys = () => {
 	const filterKey = key => key.toLowerCase().replace('arrow', '');
 	window.addEventListener('keydown', e => {
+		const key = filterKey(e.key);
 		if (key === 'right' && !ticInterval && e.altKey) {
 			callTic();
 			return;
 		}
-		const key = filterKey(e.key);
 		if (!ticInterval && key === 'enter' || key === '\n') {
 			callTic();
 			render.call();
