@@ -89,36 +89,36 @@ export const vec2 = function() {
 // - Hitbox colision ---------------------------------------------------------------------------- //
 
 export const colisionDistRight = (pos_1, hitbox_1, pos_2, hitbox_2) => {
-	if (pos_1.y >= pos_2.y + hitbox_2.y) return Infinity;
-	if (pos_2.y >= pos_1.y + hitbox_1.y) return Infinity;
+	if (pos_1.y >= pos_2.y + hitbox_2.y) return null;
+	if (pos_2.y >= pos_1.y + hitbox_1.y) return null;
 	const front = pos_1.x + hitbox_1.x;
 	const center = pos_2.x + hitbox_2.x/2;
-	if (front > center) return Infinity;
+	if (front > center) return null;
 	return pos_2.x - front;
 };
 
 export const colisionDistLeft = (pos_1, hitbox_1, pos_2, hitbox_2) => {
-	if (pos_1.y >= pos_2.y + hitbox_2.y) return Infinity;
-	if (pos_2.y >= pos_1.y + hitbox_1.y) return Infinity;
+	if (pos_1.y >= pos_2.y + hitbox_2.y) return null;
+	if (pos_2.y >= pos_1.y + hitbox_1.y) return null;
 	const center = pos_2.x + hitbox_2.x/2;
-	if (pos_1.x < center) return Infinity;
+	if (pos_1.x < center) return null;
 	return pos_1.x - (pos_2.x + hitbox_2.x);
 };
 
 export const colisionDistUp = (pos_1, hitbox_1, pos_2, hitbox_2) => {
-	if (pos_1.x >= pos_2.x + hitbox_2.x) return Infinity;
-	if (pos_2.x >= pos_1.x + hitbox_1.x) return Infinity;
+	if (pos_1.x >= pos_2.x + hitbox_2.x) return null;
+	if (pos_2.x >= pos_1.x + hitbox_1.x) return null;
 	const front = pos_1.y + hitbox_1.y;
 	const center = pos_2.y + hitbox_2.y/2;
-	if (front > center) return Infinity;
+	if (front > center) return null;
 	return pos_2.y - front;
 };
 
 export const colisionDistDown = (pos_1, hitbox_1, pos_2, hitbox_2) => {
-	if (pos_1.x >= pos_2.x + hitbox_2.x) return Infinity;
-	if (pos_2.x >= pos_1.x + hitbox_1.x) return Infinity;
+	if (pos_1.x >= pos_2.x + hitbox_2.x) return null;
+	if (pos_2.x >= pos_1.x + hitbox_1.x) return null;
 	const center = pos_2.y + hitbox_2.y/2;
-	if (pos_1.y < center) return Infinity;
+	if (pos_1.y < center) return null;
 	return pos_1.y - (pos_2.y + hitbox_2.y);
 };
 
